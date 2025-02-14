@@ -1,4 +1,4 @@
-# ASMMI-MEDIFY - Medical Center Slot Booking Platform
+# SREEKANTH-MEDIFY - Medical Center Slot Booking Platform
 
 ## Overview
 
