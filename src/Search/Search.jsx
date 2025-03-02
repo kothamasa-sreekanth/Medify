@@ -1,7 +1,8 @@
 import { Container, Stack, Box, Typography } from "@mui/material";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
+import axios from "axios";
+import AuthContext from "../components/Context/AuthContext"; // Import AuthContext
 import HospitalCard from "../components/HospitalCard/HospitalCard";
 import icon from "../assets/tick.png";
 import cta from "../assets/cta.png";
@@ -11,23 +12,27 @@ import AutohideSnackbar from "../components/AutohideSnackbar/AutohideSnackbar";
 import NavBar from "../components/NavBar/NavBar";
 
 export default function Search() {
-  //eslint-disable-next-line
+  const { user } = useContext(AuthContext); // Get user authentication state
+
   const [seachParams, setSearchParams] = useSearchParams();
   const [hospitals, setHospitals] = useState([]);
   const [state, setState] = useState(seachParams.get("state"));
   const [city, setCity] = useState(seachParams.get("city"));
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState({});
+  const [showBookingSuccess, setShowBookingSuccess] = useState(false);
+
   const availableSlots = {
     morning: ["11:30 AM"],
     afternoon: ["12:00 PM", "12:30 PM", "01:30 PM", "02:00 PM", "02:30 PM"],
     evening: ["06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM"],
   };
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState({});
-  const [showBookingSuccess, setShowBookingSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  //API to fetch hospitals based on state and city selection
+  // Fetch hospital data from API
   useEffect(() => {
+    if (!user) return; // Do not fetch data if the user is not logged in
+
     const getHospitals = async () => {
       setHospitals([]);
       setIsLoading(true);
@@ -46,14 +51,14 @@ export default function Search() {
     if (state && city) {
       getHospitals();
     }
-  }, [state, city]);
+  }, [state, city, user]);
 
   useEffect(() => {
     setState(seachParams.get("state"));
     setCity(seachParams.get("city"));
   }, [seachParams]);
 
-  // show booking modal
+  // Show booking modal
   const handleBookingModal = (details) => {
     setBookingDetails(details);
     setIsModalOpen(true);
@@ -62,107 +67,58 @@ export default function Search() {
   return (
     <>
       <NavBar />
-      <Box
-        sx={{
-          background: "linear-gradient(#EFF5FE, rgba(241,247,255,0.47))",
-          width: "100%",
-          pl: 0,
-        }}
-      >
-        <Box
-          sx={{
-            position: "relative",
-            background: "linear-gradient(90deg, #2AA7FF, #0C8CE5)",
-            borderBottomLeftRadius: "1rem",
-            borderBottomRightRadius: "1rem",
-          }}
-        >
-          <Container
-            maxWidth="xl"
-            sx={{
-              background: "#fff",
-              p: 3,
-              borderRadius: 2,
-              transform: "translatey(50px)",
-              mb: "50px",
-              boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-            }}
-          >
-            <SearchHospital />
-          </Container>
-        </Box>
-
-        <Container maxWidth="xl" sx={{ pt: 8, pb: 10, px: { xs: 0, md: 4 } }}>
-          {hospitals.length > 0 && (
-            <Box sx={{ mb: 3 }}>
-              <Typography
-                component="h1"
-                fontSize={24}
-                lineHeight={1.1}
-                mb={2}
-                fontWeight={500}
-              >
-                {`${hospitals.length} medical centers available in `}
-                <span style={{ textTransform: "capitalize" }}>
-                  {city.toLocaleLowerCase()}
-                </span>
-              </Typography>
-              <Stack direction="row" spacing={2}>
-                <img src={icon} height={24} width={24} alt="icon" />
-                <Typography color="#787887" lineHeight={1.4}>
-                  Book appointments with minimum wait-time & verified doctor
-                  details
-                </Typography>
-              </Stack>
+      <Box sx={{ background: "linear-gradient(#EFF5FE, rgba(241,247,255,0.47))" }}>
+        {/* Only Show Search When Logged In */}
+        {user ? (
+          <>
+            <Box sx={{ background: "linear-gradient(90deg, #2AA7FF, #0C8CE5)" }}>
+              <Container maxWidth="xl" sx={{ background: "#fff", p: 3, borderRadius: 2, transform: "translatey(50px)", mb: "50px", boxShadow: "0 0 10px rgba(0,0,0,0.1)" }}>
+                <SearchHospital />
+              </Container>
             </Box>
-          )}
 
-          <Stack alignItems="flex-start" direction={{ md: "row" }}>
-            <Stack
-              mb={{ xs: 4, md: 0 }}
-              spacing={3}
-              width={{ xs: 1, md: "calc(100% - 384px)" }}
-              mr="24px"
-            >
-              {hospitals.length > 0 &&
-                hospitals.map((hospital) => (
-                  <HospitalCard
-                    key={hospital["Hospital Name"]}
-                    details={hospital}
-                    availableSlots={availableSlots}
-                    handleBooking={handleBookingModal}
-                  />
-                ))}
-
-              {isLoading && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  Loading...
-                </Typography>
+            <Container maxWidth="xl" sx={{ pt: 8, pb: 10, px: { xs: 0, md: 4 } }}>
+              {hospitals.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography component="h1" fontSize={24} lineHeight={1.1} mb={2} fontWeight={500}>
+                    {`${hospitals.length} medical centers available in `}
+                    <span style={{ textTransform: "capitalize" }}>{city.toLowerCase()}</span>
+                  </Typography>
+                  <Stack direction="row" spacing={2}>
+                    <img src={icon} height={24} width={24} alt="icon" />
+                    <Typography color="#787887" lineHeight={1.4}>
+                      Book appointments with minimum wait-time & verified doctor details
+                    </Typography>
+                  </Stack>
+                </Box>
               )}
 
-              {!state && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  Please select a state and city
-                </Typography>
-              )}
-            </Stack>
+              <Stack alignItems="flex-start" direction={{ md: "row" }}>
+                <Stack mb={{ xs: 4, md: 0 }} spacing={3} width={{ xs: 1, md: "calc(100% - 384px)" }} mr="24px">
+                  {hospitals.length > 0 &&
+                    hospitals.map((hospital) => (
+                      <HospitalCard key={hospital["Hospital Name"]} details={hospital} availableSlots={availableSlots} handleBooking={handleBookingModal} />
+                    ))}
 
-            <img src={cta} width={360} height="auto" alt="banner" />
-          </Stack>
-        </Container>
+                  {isLoading && <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>Loading...</Typography>}
 
-        <BookingModal
-          open={isModalOpen}
-          setOpen={setIsModalOpen}
-          bookingDetails={bookingDetails}
-          showSuccessMessage={setShowBookingSuccess}
-        />
+                  {!state && <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>Please select a state and city</Typography>}
+                </Stack>
 
-        <AutohideSnackbar
-          open={showBookingSuccess}
-          setOpen={setShowBookingSuccess}
-          message="Booking Successful"
-        />
+                <img src={cta} width={360} height="auto" alt="banner" />
+              </Stack>
+            </Container>
+
+            <BookingModal open={isModalOpen} setOpen={setIsModalOpen} bookingDetails={bookingDetails} showSuccessMessage={setShowBookingSuccess} />
+            <AutohideSnackbar open={showBookingSuccess} setOpen={setShowBookingSuccess} message="Booking Successful" />
+          </>
+        ) : (
+          <Container maxWidth="md">
+            <Typography variant="h6" textAlign="center" mt={5} color="error">
+              You must be logged in to search for hospitals.
+            </Typography>
+          </Container>
+        )}
       </Box>
     </>
   );
