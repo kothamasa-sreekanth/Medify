@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import cta from "../assets/cta.png";
 import SearchBar from "../components/SearchBar/SearchBar";
 import NavBar from "../components/NavBar/NavBar";
+import { json } from "react-router-dom";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -17,6 +18,16 @@ export default function MyBookings() {
   useEffect(() => {
     setFilteredBookings(bookings);
   }, [bookings]);
+
+  const handleCancelBooking=(HosptialToCancle)=>{
+    const updatedBookings=bookings.filter(
+      (hospital)=>hospital["Hospital Name"] !== HosptialToCancle["Hospital Name"]
+    );
+
+    setBookings(updatedBookings);
+    setFilteredBookings(updatedBookings);
+    localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+  }
 
   //Separate page/component to render all the booked hospitals of user alogwith chosen date and time slot
   //It utilises HospitalCard component to generate the cards with data
@@ -80,6 +91,7 @@ export default function MyBookings() {
                     key={hospital["Hospital Name"]}
                     details={hospital}
                     booking={true}
+                    onCancel={handleCancelBooking}
                   />
                 ))}
 

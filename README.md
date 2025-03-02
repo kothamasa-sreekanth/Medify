@@ -1,4 +1,4 @@
-# ASMMI-MEDIFY - Medical Center Slot Booking Platform
+# SREEKANTH-MEDIFY - Medical Center Slot Booking Platform
 
 ## Overview
 
@@ -108,7 +108,7 @@ Contributing
 If you'd like to contribute to this project, please fork the repository and submit a pull request with your changes.
 
 Contact
-For any questions or suggestions, please contact Asmi.
+For any questions or suggestions, please contact Sreekanth.
 
 
 

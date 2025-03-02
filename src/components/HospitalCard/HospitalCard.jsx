@@ -10,6 +10,7 @@ export default function HospitalCard({
   availableSlots,
   handleBooking,
   booking = false,
+  onCancel,
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -142,6 +143,7 @@ export default function HospitalCard({
                   fontSize: 14,
                 }}
               />
+              <Button variant="contained" color="error" onClick={() => onCancel(details)}>Cancel</Button> {/* Cancel Button */}
             </Stack>
           )}
         </Stack>
